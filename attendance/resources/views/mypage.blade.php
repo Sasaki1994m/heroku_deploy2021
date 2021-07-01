@@ -13,7 +13,11 @@
 @endif
 <div class="row mw-100 ">
     <div class="col-4">
-    
+      <table align="center" class="m-3 ml-5">
+        <td align="center">
+          <a href="{{ route('template',['id' => $id]) }}"><button  class="btn btn-dark">テンプレートをダウンロード</button></a>
+        </td>
+      </table>
     </div>
     <div class="col-8 p-3">
         <table align="center" class="mr-3 mb-3" style="width:90%">

@@ -7,6 +7,8 @@
  use App\Http\Requests;
  use App\CsvAttendance;
  use Carbon\Carbon;
+ use Yasumi\Yasumi;
+
 
  //useしないと 自動的にnamespaceのパスが付与されるのでuse
  use SplFileObject;
@@ -189,8 +191,89 @@
         }
         return view('admin',['users' => $users,'roles' => $roles]);
     }
+    public function template(Request $request, $id)
+    {
+        $headers = [ //ヘッダー情報
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=csvexport.csv',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+        $callback = function() use ($id)
+        {
+            // global $id;
+            $dt = new Carbon();
+            $year = $dt->year;
+    
+            $start_month = Carbon::now()->startOfMonth()->toDateString();
+            $end_month = Carbon::now()->endOfMonth()->toDateString();
+    
+            // CSVデータ
+            for($start_month; $start_month <= $end_month; $start_month++){
+                $cnt = 0;
+                $holidays = \Yasumi\Yasumi::create('Japan', $year, 'ja_JP');
+                foreach($holidays as $holiday){
+                    $cnt .= ($holiday == $start_month) ? 1 : '';     //祝日か判定
+                }
+                $day = new Carbon($start_month);
+                if($day->isWeekend()) { //土日か判定
+                    $cnt++;
+                }
+                $work_start = ($cnt == 0) ? '09:00:00' : '';    //平日なら代入
+                $work_end = ($cnt == 0) ? '18:00:00' : '';      //平日なら代入
+                $break_time = '01:00:00';
+                $days = explode("-",$start_month);
+    
+                $csv[] = [
+                    $days[0],
+                    $days[1],
+                    $days[2],
+                    $work_start,
+                    $work_end,
+                    $break_time,
+                    $id,
+                    NUll,
+                    NUll,
+                ];
+            }
+            $stream = fopen('php://output', 'w');//ファイル作成
 
+            $columns = [    //1行目の情報
+                'year',
+                'month',
+                'day',
+                'work_start',
+                'work_end',
+                'break_time',
+                'user_id',
+                'punch_in',
+                'punch_out',
+            ];
+            mb_convert_variables('SJIS-win', 'UTF-8', $columns); //文字化け対策
 
+            fputcsv($stream, $columns); //1行目の情報を追記
 
+            // CSVデータ
+            foreach($csv as $value){
+                $data = [
+                    $value[0],
+                    $value[1],
+                    $value[2],
+                    $value[3],
+                    $value[4],
+                    $value[5],
+                    $value[6],
+                    $value[7],
+                ];
+                mb_convert_variables('SJIS-win', 'UTF-8', $data); //文字化け対策
 
- }
+                fputcsv($stream, $data); //ファイルに追記する
+            }
+            fclose($stream); //ファイル閉じる
+
+        };
+// dd($callback);
+        return response()->stream($callback, 200, $headers); //ここで実行
+    }
+}

@@ -38,8 +38,8 @@ class TimestampsController extends Controller
         $year  = $daytime->year ;
         $month = $daytime->month;
         $day = $daytime->day;
-        $before = ($day)-1; //前日
-
+        $yesterday = Carbon::yesterday();
+        $before =  $yesterday->day; //前日
         //昨日が退勤打刻されているか判定
         $yesterday = DB::table('csv_attendances')->where([
             ['user_id', '=', $id],
@@ -54,6 +54,9 @@ class TimestampsController extends Controller
                 $value_data->punch_in,
                 $value_data->punch_out,
             ];
+        }
+        if($yesterday->isEmpty()){
+            return back()->with('error','勤務表が確認出来ませんでした。');
         }
         if($data[0] != null && $data[1] != null && $data[2] === null ){
             return back()->with('error','退勤打刻がされていません。');
@@ -119,6 +122,9 @@ class TimestampsController extends Controller
                 $value_data_2->punch_in,
                 $value_data_2->punch_out,
             ];
+        }
+        if($today->isEmpty()){
+            return back()->with('error','勤務表が確認出来ませんでした。');
         }
         if($data[0] === null){
             return back()->with('error','本日は出勤日ではありません。');

@@ -26,8 +26,12 @@ class MypageController extends Controller
                     ['year', '=', $year],
                     ['month', '=', $month]
                     ])->get();
-        // return view('mypage',['datetime' => $datetime, 'result' => $result]);
-        return view('mypage',compact('datetime','result','month','id'));
+        if($result->isEmpty()){
+            $msg = '今月の勤務表が登録されていません';
+        }else{
+            $msg = "";
+        }
+        return view('mypage',compact('datetime','result','month','id','msg'));
 
 
     }

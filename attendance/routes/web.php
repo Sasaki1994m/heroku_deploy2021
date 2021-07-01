@@ -44,6 +44,9 @@ Route::group(['middleware' => ['auth','can:user-higher']], function(){
     Route::get('/export','AttendancesController@acquisition')->name('export');
     Route::post('/export','AttendancesController@export');
 
+//テンプレート(勤務表)をダウンロードする
+    Route::get('/template/{id}','AttendancesController@template')->name('template');
+
 });
 
 // 管理者以上
