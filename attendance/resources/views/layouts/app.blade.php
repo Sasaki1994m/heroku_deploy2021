@@ -11,7 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
   <!-- Styles -->
     <!-- ヘッダーのcss (フッタの記述も有)-->
-  <link href="{{ asset('css/header.css') }}" rel="stylesheet">
+  <link href="{{ secure_asset('css/header.css') }}" rel="stylesheet">
   <!-- vue関連 -->
   <!-- <link href="{{ mix('/css/app.css') }}" rel="stylesheet"> -->
   <!-- <script src="{{ mix('/js/app.js') }}" defer></script> -->
