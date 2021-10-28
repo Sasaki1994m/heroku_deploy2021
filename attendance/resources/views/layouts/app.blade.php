@@ -8,13 +8,16 @@
   <title>出勤者一覧</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ="crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
   <!-- Styles -->
     <!-- ヘッダーのcss (フッタの記述も有)-->
-  <link href="{{ secure_asset('css/header.css') }}" rel="stylesheet">
+  <link href="{{ asset('css/header.css') }}" rel="stylesheet">
+  <link href="{{ asset('css/content.css') }}" rel="stylesheet">
   <!-- vue関連 -->
   <!-- <link href="{{ mix('/css/app.css') }}" rel="stylesheet"> -->
-  <!-- <script src="{{ mix('/js/app.js') }}" defer></script> -->
+  <!-- <script src="{{ mix('/js/app.js') }}" ></script> -->
+  <script src="https://unpkg.com/vue"></script>
   <style>
   .table{
     margin-left: auto;
@@ -91,6 +94,89 @@
       $('.custom-file-input').on('change',function(){
           $(this).next('.custom-file-label').html($(this)[0].files[0].name);
       })
+      $(function(){
+        /** hogeクラスを持つ要素に連番でID付与 */
+        $('.kinmu').each(function(i){
+          $(this).parent().attr('id', 'parent_' + i);
+          $(this).attr('id', '' + i);
+        });
+
+        $('button').on('click', function(){
+          var idname = $(this).parent().parent().attr('id');
+          var ele =  $('#'+idname).children().children().is(':disabled');
+            if(ele == true){
+              // 編集したいとき
+
+              var element =  $('#'+idname).children().children('button').html('更新');
+              // var element =  $('#'+idname).children().children('button').html('更新');
+              element.css({
+                'background-color': '#00ff00'
+              });
+              // element.attr({'type': 'submit'});
+              var ice =  $('#'+idname).children().children('input');
+              ice.prop('disabled', false);
+              var once =  $('#'+idname).children().children('input').first();
+              var two =  $('#'+idname).children().children('input').last();
+              once[0].id = 'one';
+              two[0].id = 'second';
+
+            }else{
+              // 更新したいとき
+              var element =  $('#'+idname).children().children('button').html('修正');
+              element.css({
+                'background-color': '#343a40',
+                'border-color':'#343a40'
+              });
+
+              // var rows = $('.kinmu').index() + 1;
+              // console.log(rows);
+              var ii = $(this).parent().attr('id');
+              var rows = Number(ii)+ 1;
+              console.log(rows);
+              var ice =  $('#'+idname).children().children('input');
+              ice.prop('disabled', true,);
+              // 入力した値を取得(開始時間)
+              var textbox = document.getElementById("one");
+              var data_one = textbox.value;
+              // 入力した値を取得(終了時間)
+              var textbox = document.getElementById("second");
+              var data_two = textbox.value;
+              console.log(data_one);
+              console.log(data_two);
+
+                  $.ajax({
+                    headers: {
+                      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    type: "post", //HTTP通信の種類
+                    url:'/mypage/messages_list_api', //通信したいURL
+                    dataType: "json",
+                    data: { 
+                      punchin : data_one , 
+                      punchout : data_two ,
+                      days : rows ,
+                    },
+                  })
+                  //通信が成功したとき
+                  .done((res)=>{
+                    console.log(res.message)
+                  })
+                  //通信が失敗したとき
+                  .fail((error)=>{
+                    console.log(error.statusText)
+                  });
+              // id属性を空にする
+              var once =  $('#'+idname).children().children('input').first();
+              var two =  $('#'+idname).children().children('input').last();
+              once[0].id = '';
+              two[0].id = '';
+            }
+
+        });
+        
+      });
+      var id = $('td.item').data('id');
+      
   </script>
 </head>
 <body>

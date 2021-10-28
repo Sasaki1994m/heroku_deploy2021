@@ -3,11 +3,13 @@
  namespace App\Http\Controllers;
  use Illuminate\Http\Request;
  use Illuminate\Support\Facades\DB;
+ use Illuminate\Database\Eloquent\Model;
  use Symfony\Component\HttpFoundation\StreamedResponse;
  use App\Http\Requests;
  use App\CsvAttendance;
  use Carbon\Carbon;
- use Yasumi\Yasumi;
+use Illuminate\Support\Facades\Auth;
+use Yasumi\Yasumi;
 
 
  //useしないと 自動的にnamespaceのパスが付与されるのでuse
@@ -35,6 +37,7 @@
       */
      public function inport(Request $request)
     {
+        $auth_id = Auth::id();
 
         if(!empty($request->file('csv_file'))){
             //全件削除
@@ -73,6 +76,9 @@
                     $break_time = mb_convert_encoding($row[5], 'UTF-8', 'SJIS');
                     $break_time = ($break_time === '')  ? NULL : $break_time;
                     $user_id = mb_convert_encoding($row[6], 'UTF-8', 'SJIS');
+                    if($user_id != $auth_id){
+                        return back()->with('status','ユーザIDが一致しません');
+                    }
                     //1件ずつインポート
                     \DB::beginTransaction();
                     try{
@@ -189,7 +195,11 @@
                 $roles[] = "一般ユーザー";
             }
         }
-        return view('admin',['users' => $users,'roles' => $roles]);
+        $attendance = DB::table('csv_attendances')->where([
+            ['status', '=', '1']
+        ])->get();
+
+        return view('admin',['users' => $users,'roles' => $roles,'attendance' => $attendance]);
     }
     public function template(Request $request, $id)
     {
@@ -275,5 +285,39 @@
         };
 // dd($callback);
         return response()->stream($callback, 200, $headers); //ここで実行
+    }
+    public function approval(Request $request)
+    {
+
+        \DB::beginTransaction();
+        try{
+            $timestamp = DB::table('csv_attendances')->where([
+                ['user_id', '=', $request->bfs],
+                ['punch_in', '=', $request->pasresf],
+                ['status', '=', 1],
+                ])
+            ->update(['status' => 0 ]);
+            \DB::commit();
+ 
+            $users = DB::table('users')->get();
+    
+            foreach($users as $key => $value){
+    
+                if($value->role > 0  && $value->role <= 5){
+                    $roles[] = "管理者";
+                }elseif($value->role > 0  && $value->role <= 10){
+                    $roles[] = "一般ユーザー";
+                }
+            }
+            $attendance = DB::table('csv_attendances')->where([
+                ['status', '=', '1']
+            ])->get();
+            return redirect(route('admin',['users' => $users,'roles' => $roles,'attendance' => $attendance]))->with('status','承認が完了しました。');
+        } catch (\Exception $e) {
+			// エラー発生時は、DBへの保存処理が無かったことにする（ロールバック）
+			\DB::rollBack();
+            return back()->with('error','承認に失敗しました。');
+        }
+
     }
 }

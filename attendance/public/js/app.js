@@ -49739,10 +49739,93 @@ Vue.component('example-component', __webpack_require__(/*! ./components/ExampleC
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
+// const app = new Vue({
+//     el: '#app',
+// });
 
-var app = new Vue({
-  el: '#app'
+var baseurl = location.origin + "/mypage";
+var todo = new Vue({
+  el: '#app',
+  data: {
+    list: [],
+    last: null,
+    inputText: ""
+  },
+  methods: {
+    send: function send() {
+      if (!todo.last) {
+        todo.list = {
+          created_at: "1970-01-01 00:00:00"
+        };
+      }
+
+      sendMessage(this.inputText, todo.last.created_ad); //送信メッセージ関数
+
+      this.inputText = ""; //初期化
+    }
+  }
 });
+
+function sendMessage(message) {
+  $.ajaxSetup({
+    headers: {
+      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+  });
+  $.ajax({
+    type: "POST",
+    url: baseURL + '/send_message_api',
+    dataType: "json",
+    data: {
+      "message": message,
+      "created_at": created_at
+    }
+  }).done(function (results) {
+    console.log("メッセージ追加成功！");
+    console.log('results=', results);
+    addMessage(results); // 通信に成功したらAPIからの返り値を addMessage() に入れる
+  }).fail(function (jqXHR, textStatus, errorThrown) {
+    alert('メッセージを送信に失敗しました。');
+    console.log("ajax通信に失敗しました");
+    console.log("jqXHR          : " + jqXHR.status); // HTTPステータスが取得
+
+    console.log("textStatus     : " + textStatus); // タイムアウト、パースエラー
+  });
+}
+
+;
+getMessages(true); //初回起動
+
+function getMessages() {
+  $ajaxSetup({
+    headers: {
+      'X-CSRF-TOKEN': $(meta[name = "csrf-token"]).attr('content')
+    }
+  });
+  $.ajax({
+    type: "POST",
+    url: baseurl + '/mypage/',
+    dataType: "json",
+    data: {
+      "created_ad": data
+    }
+  }).done(function (results) {
+    addMessage(results);
+  }).fail(function (jqXHR, textStatus, errorThrown) {
+    alert('メッセージの取得に失敗しました。');
+    console.log("ajax通信に失敗しました");
+    console.log("jqXHR          : " + jqXHR.status); // HTTPステータスが取得
+
+    console.log("textStatus     : " + textStatus); // タイムアウト、パースエラー
+  });
+}
+
+function addMessage(results) {
+  $each(results.tasks, function () {
+    todo.list.push(this);
+    todo.last = this;
+  });
+}
 
 /***/ }),
 
@@ -49878,8 +49961,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\Users\makot\attendance\attendance\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\Users\makot\attendance\attendance\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\xampp\htdocs\heroku\attendance\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\xampp\htdocs\heroku\attendance\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

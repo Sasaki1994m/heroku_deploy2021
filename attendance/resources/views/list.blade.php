@@ -3,7 +3,7 @@
 @section('content')
 
 {{-- リアルタイム時刻停止中（再開したい場合は「RealtimeClockArea2」をidタグに） --}}
-<p class="times" id=""></p>
+<p class="times" id="RealtimeClockArea2"></p>
   <table border="1" class="table">
     <p class="text-center" ><strong>本日の出勤者</strong></p>
     <thead class="thead-dark">

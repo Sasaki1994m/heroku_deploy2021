@@ -17,13 +17,15 @@ class UsersTableSeeder extends Seeder
             'password' => bcrypt('sample001'),
             'created_at' => '2021-03-01 09:00:00',
             'role' => '3',
+            'pay' => '950',
         ]);
         DB::table('users')->insert([
             'name' => 'sample002',
             'login_id' => 'sampletest02',
             'password' => bcrypt('sample002'),
             'created_at' => '2021-03-02 09:00:00',
-            'role' => '5',
+            'role' => '6',
+            'pay' => '950',
         ]);
         DB::table('users')->insert([
             'name' => 'sample003',
@@ -31,6 +33,7 @@ class UsersTableSeeder extends Seeder
             'password' => bcrypt('sample003'),
             'created_at' => '2021-03-03 09:00:00',
             'role' => '6',
+            'pay' => '1050',
         ]);
         DB::table('users')->insert([
             'name' => 'sample004',
@@ -38,6 +41,7 @@ class UsersTableSeeder extends Seeder
             'password' => bcrypt('sample004'),
             'created_at' => '2021-03-04 09:00:00',
             'role' => '1',
+            'pay' => '900',
         ]);
         DB::table('users')->insert([
             'name' => 'sample005',
@@ -45,6 +49,7 @@ class UsersTableSeeder extends Seeder
             'password' => bcrypt('sample005'),
             'created_at' => '2021-03-05 09:00:00',
             'role' => '10',
+            'pay' => '1000',
         ]);
     }
 }

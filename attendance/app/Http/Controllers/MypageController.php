@@ -3,9 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\User;
+use App\Timestamp;
+use App\CsvAttendance;
+use Log;
 
 class MypageController extends Controller
 {
@@ -26,13 +31,29 @@ class MypageController extends Controller
                     ['year', '=', $year],
                     ['month', '=', $month]
                     ])->get();
+        $users = DB::table('users')->where([
+                    ['id', '=', $id],
+                    ])->get();
+        $pay = $users[0]->pay;
+        $total = 0;
+        foreach($result as $inside){
+
+            if($inside->punch_out != NULL){
+            $punchout = strtotime($inside->punch_out);
+            $punchin = strtotime($inside->punch_in);
+            $work = ($punchout - $punchin)/60/60;   //１日の勤務時間
+            $oneday = round($work, 1);              //小数点第一位を四捨五入
+            $oneday = $oneday -1.0;                 //休憩時間を追加
+            $total += $pay * $oneday;
+            }
+        }
         if($result->isEmpty()){
             $msg = '今月の勤務表が登録されていません';
         }else{
             $msg = "";
         }
-        return view('mypage',compact('datetime','result','month','id','msg'));
-
+        return view('mypage',compact('datetime','result','month','id','msg','users','total'));
+        // return response()->json(['tasks' => $result]);
 
     }
 
@@ -141,5 +162,62 @@ class MypageController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function getAllMessage(Request $request)
+    {
+
+        Log::debug($request);
+        // 変数を設定する
+        $id = Auth::id();
+        $datetime = Carbon::now();
+        $year = $datetime->year;
+        $month = $datetime->month;        
+
+        // データ更新
+        \DB::beginTransaction();
+        try{
+            $kintai = DB::table('csv_attendances')->where([
+                ['user_id', '=', $id],
+                ['month', '=', $month],
+                ['day', '=', $request->days],
+                ])
+                ->update([
+                    'punch_in' => $request->punchin ,
+                    'punch_out' => $request->punchout ,
+                    'status' => 1 ,
+                ]);
+                \DB::commit();
+
+            $result = DB::table('csv_attendances')->where([
+                        ['user_id', '=', $id],
+                        ['year', '=', $year],
+                        ['month', '=', $month],
+                        ])->get();
+            $users = DB::table('users')->where([
+                ['id', '=', $id],
+                ])->get();
+            $pay = $users[0]->pay;
+            $total = 0;
+            foreach($result as $inside){
+    
+                if($inside->punch_out != NULL){
+                $punchout = strtotime($inside->punch_out);
+                $punchin = strtotime($inside->punch_in);
+                $work = ($punchout - $punchin)/60/60;   //１日の勤務時間
+                $oneday = round($work, 1);              //小数点第一位を四捨五入
+                $oneday = $oneday -1.0;                 //休憩時間を追加
+                $total += $pay * $oneday;
+                }
+            }
+
+            // return response()->json(['tasks' => $result])->with('status','出勤打刻が完了しました。');
+            return [$datetime, $result, $month, $id,$users,$total];
+
+        }catch(\Exception $e){
+            
+			\DB::rollBack();
+            return back()->with('status','退勤打刻に失敗しました。');
+        }
     }
 }

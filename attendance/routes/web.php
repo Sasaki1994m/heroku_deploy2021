@@ -35,6 +35,10 @@ Route::group(['middleware' => ['auth','can:user-higher']], function(){
     Route::get('/timestamps_create', 'TimestampsController@create')->name('timestamps.create');
     Route::post('/timestamps_store/{id}', 'TimestampsController@store')->name('timestamps.store');
     Route::post('/timestamps_update/{id}', 'TimestampsController@update')->name('timestamps.update');
+    
+    // マイページ編集
+    Route::post('/timestamps_fix/{id}', 'TimestampsController@renewal')->name('timestamps.renewal');
+    Route::post('mypage/messages_list_api', 'MypageController@getAllMessage'); // メッセージ取得API
 
 //勤務表をCSVで取り込むためのルーティング
     // インポート
@@ -53,6 +57,7 @@ Route::group(['middleware' => ['auth','can:user-higher']], function(){
 Route::group(['middleware' => ['auth', 'can:admin-higher']],function(){
     // ユーザ一覧
     Route::get('/administrator','AttendancesController@adminPage')->name('admin');
+    Route::get('/approval','AttendancesController@approval')->name('approval');
 
     // ユーザ登録
     Route::get('account/regist','AccountController@regist')->name('account.regist');
