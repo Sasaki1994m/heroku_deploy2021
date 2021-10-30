@@ -1,0 +1,1 @@
+<?php include_once("/attendance/public/index.php"); ?>
